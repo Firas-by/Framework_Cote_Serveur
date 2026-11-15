@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Category;
+
 beforeEach(function () {
     $this->withoutVite();
 });
@@ -9,6 +11,16 @@ it('shows the styled 404 page for an unknown URL', function () {
         ->assertNotFound()
         ->assertSee('Page introuvable')
         ->assertSee("Retour à l'accueil", false);
+});
+
+it('shows the custom category not found page with existing categories', function () {
+    Category::factory()->create(['name' => 'Laravel', 'slug' => 'laravel']);
+
+    $this->get('/posts/categorie/inconnue')
+        ->assertNotFound()
+        ->assertSee('Catégorie introuvable')
+        ->assertSee('Laravel')
+        ->assertSee(route('posts.category', 'laravel'));
 });
 
 it('shows the styled 503 page when the site is read-only', function () {
