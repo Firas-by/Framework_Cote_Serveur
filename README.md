@@ -158,5 +158,22 @@ Back-office des catégories et des tags, messages de validation en français, pa
 ![Barre de navigation d'un utilisateur connecté, avec le message « Vous êtes connecté. »](screenshots/s11-connexion.png)
 ![Page 403 quand un auteur ouvre la modification de l'article d'un autre auteur](screenshots/s11-interdit.png)
 
+## Comparaison avec le starter kit Livewire
+
+| Critère | Mini-CMS (authentification manuelle) | Starter kit Livewire |
+|---|---|---|
+| Routes d'authentification | `routes/web.php` (`/inscription`, `/connexion`, `/deconnexion`) | Enregistrées par Fortify depuis son paquet ; absentes de `routes/web.php` |
+| Inscription | `app/Http/Controllers/Auth/RegisterController.php` et `app/Http/Requests/RegisterRequest.php` | `app/Actions/Fortify/CreateNewUser.php` (`Validator::make` puis `User::create`) et `resources/views/pages/auth/register.blade.php` |
+| Connexion | `app/Http/Controllers/Auth/LoginController.php` (`Auth::attempt`, `regenerate`) | Contrôleur de Fortify et `resources/views/pages/auth/login.blade.php` |
+| Déconnexion | `app/Http/Controllers/Auth/LoginController.php` (`Auth::logout`, `invalidate`, `regenerateToken`) | Route `logout` de Fortify ; les mêmes trois opérations dans `app/Livewire/Actions/Logout.php` |
+| Limitation des tentatives | Aucune | 5 tentatives par minute par e-mail et adresse IP (`app/Providers/FortifyServiceProvider.php`) |
+| Mot de passe oublié | Absent | `Features::resetPasswords()` dans `config/fortify.php` |
+| Vérification de l'e-mail | Absente | `Features::emailVerification()`, `MustVerifyEmail` sur `User`, middleware `verified` sur `/dashboard` |
+| Double authentification | Absente | `Features::twoFactorAuthentication()` et `Features::passkeys()` |
+| Rôles et autorisations | Colonne `role`, Gates (`manage-categories`, `manage-tags`), `PostPolicy`, middleware `admin` | Aucun : à écrire soi-même |
+| Tests | `AuthTest`, `AuthorizationTest`, `AdminAccessTest`, `PostVisibilityTest` | 10 fichiers dans `tests/Feature` (Auth, Settings, Dashboard) ; écrits avec PHPUnit dans le dépôt |
+
+Ce que je garderais du kit dans un vrai projet : la limitation du débit de connexion fournie par Fortify pour prévenir les attaques par force brute, ainsi que la vérification des adresses e-mail et la réinitialisation de mot de passe prêtes à l'emploi. Ces fonctionnalités évitent de réimplémenter des briques de sécurité complexes tout en conservant la liberté de concevoir nos propres règles métier d'autorisation.
+
 
 
